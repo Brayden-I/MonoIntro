@@ -12,11 +12,23 @@ public class Game1 : Game
     // FIELDS
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    
+    //Viewport
+    private Viewport vp;
+        
+    //Delta Time
+    private float dt;
+        
+    //Keyboard
+    private KeyboardState kb;
+    
     private RgbHelper RGB;
     
     private float _slugRot = 0f;
     
+    //Player
     private Vector2 _playerPos = Vector2.Zero;
+    private SpriteEffects _flip = SpriteEffects.None;
     
     // SPRITES
     private Texture2D _pixel;
@@ -61,10 +73,13 @@ public class Game1 : Game
             Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
         // Delta Time
-        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         
         // Keyboard
-        var kb = Keyboard.GetState();
+        kb = Keyboard.GetState();
+        
+        // View port
+        vp = GraphicsDevice.Viewport;
         
         // RGB BACKGROUND
         float rgb_speed = 60f;
@@ -82,6 +97,14 @@ public class Game1 : Game
         if (kb.IsKeyDown(Keys.S)) _playerPos.Y += speed * dt;
         if (kb.IsKeyDown(Keys.A)) _playerPos.X -= speed * dt;
         if (kb.IsKeyDown(Keys.D)) _playerPos.X += speed * dt;
+        
+        //no border clipping
+        _playerPos.X = MathHelper.Clamp(_playerPos.X, 0, vp.Width - _playerIdleTexture.Width);
+        _playerPos.Y = MathHelper.Clamp(_playerPos.Y, 0, vp.Height - _playerIdleTexture.Height);
+        
+        //spriteflipping
+        if (kb.IsKeyDown(Keys.A)) _flip = SpriteEffects.FlipHorizontally;
+        if (kb.IsKeyDown(Keys.D)) _flip = SpriteEffects.None;
         
         base.Update(gameTime);
     }
@@ -109,11 +132,18 @@ public class Game1 : Game
         );
         
         // Player
+        Texture2D playerTex = kb.IsKeyDown(Keys.Space) ? _playerShootTexture : _playerIdleTexture;
+        
         _spriteBatch.Draw(
-            _playerIdleTexture,
+            playerTex,
             _playerPos,
             null,
-            Color.White
+            Color.White,
+            0f,
+            Vector2.Zero,
+            1f,
+            SpriteEffects.None,
+            0f
         );
         
         _spriteBatch.End();
